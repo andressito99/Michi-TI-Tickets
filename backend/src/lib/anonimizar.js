@@ -3,6 +3,16 @@
 
 const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+// Cada letra acepta sus variantes con tilde: "maria" encuentra "María" y "garcia" encuentra "García"
+const VARIANTES_LETRA = { a: "aáàäâ", e: "eéèëê", i: "iíìïî", o: "oóòöô", u: "uúùüû", n: "nñ", c: "cç" };
+const sinTildes = s => s.normalize("NFD").replace(/\p{M}/gu, "");
+function patronSinTildes(nombre) {
+  return [...sinTildes(nombre)].map(ch => {
+    const variantes = VARIANTES_LETRA[ch.toLowerCase()];
+    return variantes ? `[${variantes}${variantes.toUpperCase()}]` : escapeRegex(ch);
+  }).join("");
+}
+
 /**
  * @param {string} text
  * @param {{ usuarios?: string[], soporte?: string[] }} nombres
@@ -22,7 +32,7 @@ export function anonimizar(text, { usuarios = [], soporte = [] } = {}) {
   ].sort((a, b) => b[0].length - a[0].length); // primero los nombres completos
 
   for (const [nombre, sustituto] of reemplazos) {
-    const re = new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegex(nombre)}(?![\\p{L}\\p{N}])`, "giu");
+    const re = new RegExp(`(?<![\\p{L}\\p{N}])${patronSinTildes(nombre)}(?![\\p{L}\\p{N}])`, "giu");
     s = s.replace(re, sustituto);
   }
   return s.replace(/\[usuario\](\s+\[usuario\])+/g, "[usuario]");
