@@ -1,0 +1,55 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Secretos: NUNCA deben subirse a GitHub ─────────────────
+# Variables de entorno (JWT, MySQL, DeepSeek, Supabase…) en cualquier carpeta.
+# Solo se versionan las plantillas .env.example (sin valores reales).
+.env
+.env.*
+*.env
+!.env.example
+
+# Llaves, certificados y firmas de la app móvil
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+key.properties
+**/android/key.properties
+google-services.json
+GoogleService-Info.plist
+
+# Volcados de base de datos (pueden contener datos personales)
+*.sql.gz
+*.dump
+dumps/
+backups/
+
+# Python (servicio de IA)
+.venv/
+__pycache__/
+*.pyc

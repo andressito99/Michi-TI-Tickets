@@ -1,0 +1,57 @@
+#!/bin/sh
+# ─────────────────────────────────────────────────────────────
+#  Bloquea commits que incluyan secretos (.env, llaves, API keys).
+#  Se activa con:  git config core.hooksPath .githooks
+#  (solo si de verdad sabes lo que haces: git commit --no-verify)
+#
+#  Solo detecta valores REALES. El código que lee las claves del
+#  entorno (process.env.X, os.getenv("X")) está permitido.
+# ─────────────────────────────────────────────────────────────
+
+# Locale C: grep mucho más rápido (con UTF-8 en Windows puede tardar minutos)
+LC_ALL=C
+export LC_ALL
+
+fail=0
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+# 1. Archivos que nunca deben versionarse
+for f in $staged; do
+  base=${f##*/}   # sin "basename": en Windows crear un proceso por archivo tarda minutos
+  case "$base" in
+    .env.example) ;;  # la plantilla sí se versiona
+    .env|.env.*|*.env|*.pem|*.key|*.p12|*.pfx|*.jks|*.keystore|key.properties)
+      echo "✖ Archivo con secretos: $f"
+      fail=1 ;;
+  esac
+done
+
+# 2. Secretos escritos dentro del código (solo en las líneas añadidas)
+NAMES='(JWT_SECRET|AI_SERVICE_TOKEN|DB_PASSWORD|DEEPSEEK_API_KEY|SUPABASE_KEY|SEED_[A-Z]+_PASSWORD)'
+# a) Claves con formato reconocible: DeepSeek/OpenAI, llaves privadas y JWT (Supabase)
+KEYS='sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.'
+# b) Formato .env con valor: JWT_SECRET=abc123 (sin espacios alrededor del =)
+ENVLINE="^[[:space:]]*(export[[:space:]]+)?${NAMES}=[^[:space:]#]+"
+# c) Valor literal entre comillas: JWT_SECRET = "abc…" / password: 'abc…'
+LITERAL="(${NAMES}|[Pp]assword|[Aa]pi_?[Kk]ey|[Ss]ecret)[\"']?[[:space:]]*[:=][[:space:]]*[\"'][^\"'[:space:]]{12,}[\"']"
+
+added=$(git diff --cached -U0 --diff-filter=ACMR -- . \
+          ':(exclude)*.env.example' ':(exclude)*.md' ':(exclude).githooks/*' \
+          ':(exclude)*.lock' ':(exclude)*package-lock.json' \
+        | grep -E '^\+[^+]' | cut -c2-)
+
+hits=$(printf '%s\n' "$added" | grep -E -e "$KEYS" -e "$ENVLINE" -e "$LITERAL")
+if [ -n "$hits" ]; then
+  echo "✖ Parece que hay secretos en el código:"
+  printf '%s\n' "$hits" | sed -E 's/([:=][[:space:]]*["'"'"']?).{4}.*/\1****/' | head -10
+  fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "Commit cancelado: los secretos van en los archivos .env (que están en .gitignore)."
+  echo "Si subiste un secreto por error, cámbialo (rótalo) aunque borres el commit."
+  exit 1
+fi
+exit 0
