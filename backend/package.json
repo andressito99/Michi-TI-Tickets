@@ -1,9 +1,16 @@
 {
-  "name": "ti-tickets-backend",
+  "name": "michi-backend",
   "version": "1.0.0",
+  "description": "API REST de Michi · Soporte TI con siete vidas (Node.js + MySQL)",
+  "license": "Apache-2.0",
+  "author": "andressito99",
+  "homepage": "https://github.com/andressito99/Michi-TI-Tickets",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andressito99/Michi-TI-Tickets.git"
+  },
   "private": true,
   "type": "module",
-  "description": "API REST de TI-Tickets (Node.js + MySQL)",
   "engines": {
     "node": ">=20.12"
   },

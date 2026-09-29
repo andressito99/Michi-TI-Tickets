@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, Check, ChevronRight, ChevronDown, Clock, Loader2, Send, AlertCircle, Lightbulb, ThumbsUp, ImagePlus } from "lucide-react";
 import { api } from "../lib/api";

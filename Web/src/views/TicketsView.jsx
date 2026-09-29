@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { TicketList } from "../components/tickets/TicketList";
 import { TicketWorkspace } from "../components/tickets/TicketWorkspace";
 import { Michi } from "../components/ui/Michi";

@@ -12,6 +12,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
 ![Flutter](https://img.shields.io/badge/Flutter-app_móvil-02569B?logo=flutter&logoColor=white)
 ![DeepSeek](https://img.shields.io/badge/IA-DeepSeek-4D6BFE)
+[![Licencia: Apache 2.0](https://img.shields.io/badge/Licencia-Apache_2.0-D22128?logo=apache&logoColor=white)](LICENCIA.md)
 
 <img src="docs/screenshots/09-admin-tickets.png" alt="Panel de tickets del administrador" width="100%" />
 
@@ -46,6 +47,7 @@
 15. [Scripts disponibles](#scripts-disponibles)
 16. [Solución de problemas](#solución-de-problemas)
 17. [Hoja de ruta](#hoja-de-ruta)
+18. [Licencia](#licencia)
 
 ---
 
@@ -837,6 +839,29 @@ Es lo esperado: `.htaccess` bloquea que Apache sirva la carpeta, para que nadie 
 
 ---
 
+## Licencia
+
+**Michi · Soporte TI con siete vidas** — Copyright © 2026 **andressito99** y los colaboradores del proyecto Michi.
+
+Distribuido bajo la **[Licencia Apache 2.0](LICENSE)**: puedes usarlo, modificarlo y distribuirlo (también con fines comerciales) siempre que:
+
+- **Incluyas la licencia** ([`LICENSE`](LICENSE)) y **conserves el aviso de atribución** ([`NOTICE`](NOTICE)).
+- **Cites el proyecto** en un lugar visible, por ejemplo: *"Basado en Michi · Soporte TI con siete vidas, de andressito99 (Licencia Apache 2.0)"*.
+- **Indiques los cambios** que hagas en los archivos modificados.
+
+El nombre **"Michi"**, el lema, el logotipo y la mascota identifican al proyecto original: una versión derivada puede decir que está *basada en Michi*, pero no presentarse como Michi. El software se entrega **"tal cual"**, sin garantías.
+
+| Archivo | Contenido |
+|---|---|
+| [`LICENSE`](LICENSE) | Texto oficial de la Licencia Apache 2.0 (el que tiene validez legal) |
+| [`NOTICE`](NOTICE) | Aviso de copyright y atribución obligatoria |
+| [`LICENCIA.md`](LICENCIA.md) | Guía en español: qué puedes hacer, qué tienes que cumplir y cómo citar el proyecto |
+
+Cada archivo de código lleva la cabecera `SPDX-License-Identifier: Apache-2.0` con el copyright. La app muestra la atribución en la pantalla de acceso y en el menú de usuario.
+
+---
+
 <div align="center">
-  Hecho con 🧡 y mucho ronroneo · <b>Michi</b>, soporte TI con siete vidas 🐾
+  Hecho con 🧡 y mucho ronroneo por <b>andressito99</b> · <b>Michi</b>, soporte TI con siete vidas 🐾<br/>
+  <sub>© 2026 andressito99 · <a href="LICENCIA.md">Licencia Apache 2.0</a></sub>
 </div>

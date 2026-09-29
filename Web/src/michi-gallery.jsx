@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Galería de desarrollo de la mascota (http://localhost:5173/michi.html).
 // También la usa el script que genera las imágenes PNG de la app móvil.
 import { createRoot } from "react-dom/client";

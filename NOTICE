@@ -1,0 +1,38 @@
+Michi · Soporte TI con siete vidas
+Copyright 2026 andressito99 y los colaboradores del proyecto Michi
+
+Este producto incluye software desarrollado por el proyecto Michi
+(https://github.com/andressito99/Michi-TI-Tickets), una mesa de ayuda de
+soporte técnico con panel web, portal de usuarios, app móvil, foro de
+soluciones anónimo y asistente de IA.
+
+Licenciado bajo la Licencia Apache, Versión 2.0 (la "Licencia").
+No se puede usar este proyecto salvo de conformidad con la Licencia.
+Se puede obtener una copia de la Licencia en el archivo LICENSE o en:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Salvo que lo exija la ley aplicable o se acuerde por escrito, el software
+distribuido bajo la Licencia se distribuye "TAL CUAL", SIN GARANTÍAS NI
+CONDICIONES DE NINGÚN TIPO, ni expresas ni implícitas. Consulta la Licencia
+para conocer los permisos y limitaciones concretos.
+
+------------------------------------------------------------------------
+ATRIBUCIÓN OBLIGATORIA
+
+Quien redistribuya este proyecto, o una obra derivada de él, debe
+conservar este archivo NOTICE (sección 4.d de la Licencia) y mostrar la
+siguiente atribución en un lugar razonable (por ejemplo, la documentación,
+la pantalla "Acerca de" o el pie de la aplicación):
+
+    Basado en Michi · Soporte TI con siete vidas, de andressito99
+    (Licencia Apache 2.0).
+
+------------------------------------------------------------------------
+NOMBRE Y MASCOTA
+
+"Michi", el lema "Soporte TI con siete vidas", el logotipo y la mascota
+(el gato naranja y sus ilustraciones) identifican al proyecto original.
+La Licencia no concede permiso para usar estos elementos como marca de
+una obra derivada (sección 6 de la Licencia), salvo para describir su
+origen, por ejemplo: "basado en Michi".

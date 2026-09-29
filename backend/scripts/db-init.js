@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Crea la base de datos y las tablas a partir de database/schema.sql.
 // Con --seed además inserta datos de demostración (solo si las tablas están vacías).
 //

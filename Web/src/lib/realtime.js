@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Cliente de notificaciones en tiempo real (Server-Sent Events).
 //
 // Se usa fetch() con lectura en streaming en lugar de EventSource porque EventSource

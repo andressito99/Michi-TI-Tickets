@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Botón del menú lateral. Contraído: solo icono con tooltip. Expandido: icono + texto.
 export function NavItem({ label, Icon, active, badge, onClick, expanded }) {
   const hasBadge = badge != null && badge > 0;

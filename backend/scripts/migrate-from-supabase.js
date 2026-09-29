@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Copia los datos de Supabase a MySQL conservando los IDs.
 // Requiere SUPABASE_URL y SUPABASE_KEY (service_role para poder leer todo) en backend/.env
 // y que el esquema ya exista (npm run db:init).

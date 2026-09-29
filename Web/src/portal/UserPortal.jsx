@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { useState, useRef, useEffect } from "react";
 import { Plus, Sun, Moon, LogOut, ChevronDown, Home, BookOpenCheck } from "lucide-react";
 import { Avatar } from "../components/ui/Avatar";
@@ -10,6 +13,7 @@ import { ForoBrowser } from "../foro/ForoBrowser";
 import { MichiWatermark } from "../components/ui/MichiBuddy";
 import { NotificationBell } from "../notifications/NotificationBell";
 import { useNotificationHandler } from "../notifications/NotificationsProvider";
+import { Credits } from "../components/ui/Credits";
 
 /**
  * Portal sencillo para usuarios normales (rol "usuario"):
@@ -126,6 +130,7 @@ function PortalHeader({ user, onLogout, dark, onToggleDark, onHome, onReport, on
                 <button onClick={onLogout} className="w-full px-4 py-2.5 text-sm text-ink-2 hover:bg-hover flex items-center gap-2">
                   <LogOut size={15} /> Cerrar sesión
                 </button>
+                <Credits className="px-4 py-2.5 border-t border-line bg-subtle" />
               </div>
             )}
           </div>

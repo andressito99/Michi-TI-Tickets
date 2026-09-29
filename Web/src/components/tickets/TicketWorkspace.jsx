@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { useState, useRef, useEffect } from "react";
 import {
   X, ChevronDown, ChevronRight, ArrowRight, ArrowLeft, PanelRightOpen, Send, Sparkles, Loader2, Ticket as TicketIcon,

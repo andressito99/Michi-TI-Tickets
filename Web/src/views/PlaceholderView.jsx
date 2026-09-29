@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 export function PlaceholderView({ icon: Icon, title, subtitle }) {
   return (
     <div className="bg-surface rounded-xl border border-line p-14 text-center">

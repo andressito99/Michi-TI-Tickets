@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 """Servicio de IA de TI-Tickets (FastAPI + DeepSeek).
 
 Lo consume únicamente el backend Node (backend/src/routes/ai.js), que le envía

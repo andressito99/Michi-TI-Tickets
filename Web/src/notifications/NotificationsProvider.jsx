@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Centro de notificaciones: escucha los eventos en tiempo real, muestra avisos emergentes,
 // guarda el historial para la campana y, si la pestaña está en segundo plano y hay permiso,
 // lanza notificaciones del escritorio.

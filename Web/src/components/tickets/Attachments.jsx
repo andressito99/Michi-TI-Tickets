@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Capturas adjuntas: borrador (adjuntar, arrastrar o pegar con Ctrl+V), galería y visor.
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Paperclip, X, Download, ChevronLeft, ChevronRight, ImageOff, Loader2 } from "lucide-react";

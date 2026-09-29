@@ -1,7 +1,15 @@
 {
-  "name": "sistematicketsweb",
+  "name": "michi-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Web de Michi · Soporte TI con siete vidas: panel de administración y portal de usuarios",
+  "license": "Apache-2.0",
+  "author": "andressito99",
+  "homepage": "https://github.com/andressito99/Michi-TI-Tickets",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andressito99/Michi-TI-Tickets.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

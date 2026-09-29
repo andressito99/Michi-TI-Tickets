@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 """Configuración del servicio de IA. Todo lo sensible viene de ai/.env (nunca del código)."""
 import os
 import sys

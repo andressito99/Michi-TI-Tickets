@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Cliente HTTP para la API Node (backend/). En desarrollo Vite redirige /api → localhost:3000.
 export const BASE_URL = (import.meta.env.VITE_API_URL ?? "/api").replace(/\/$/, "");
 

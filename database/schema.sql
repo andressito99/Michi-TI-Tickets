@@ -1,3 +1,6 @@
+-- SPDX-License-Identifier: Apache-2.0
+-- Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 -- ─────────────────────────────────────────────────────────────
 --  TI-Tickets — esquema MySQL (compatible con MAMP / MySQL 5.7+)
 --  Importar desde phpMyAdmin o con:  npm run db:init  (en backend/)

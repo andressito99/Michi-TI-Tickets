@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Campana de la barra superior: historial de notificaciones y estado de la conexión en tiempo real.
 import { useState, useRef, useEffect } from "react";
 import { Bell, BellRing, CheckCheck, MonitorSmartphone } from "lucide-react";

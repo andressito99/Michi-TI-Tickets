@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { useState, useMemo } from "react";
 import { Clock, Eye } from "lucide-react";
 import { Michi } from "../components/ui/Michi";

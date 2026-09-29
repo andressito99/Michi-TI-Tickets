@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
 # ─────────────────────────────────────────────────────────────
 #  Bloquea commits que incluyan secretos (.env, llaves, API keys).
 #  Se activa con:  git config core.hooksPath .githooks

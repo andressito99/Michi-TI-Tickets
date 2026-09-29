@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { getInitials } from "../../utils/ticketUtils";
 
 // Paleta de avatares: el color se deriva del nombre para que sea estable

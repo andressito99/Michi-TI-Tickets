@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Notificaciones en tiempo real con Server-Sent Events (SSE).
 //
 // Cada navegador abre GET /api/events y mantiene la conexión abierta. Cuando algo cambia

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { Wifi, Monitor, AppWindow, KeyRound, Printer, Mail, Phone, ShieldAlert, Database, HelpCircle } from "lucide-react";
 
 // Icono, color y explicación en lenguaje sencillo según palabras clave del nombre de la categoría

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Estados del ticket: etiqueta, descripción y estilos (pill suave + color sólido)
 export const STATUSES = [
   { key: "open",     label: "En proceso", hint: "Se está trabajando", pill: "bg-[#e8f1fe] text-[#1f5fc9] dark:bg-[#16294a] dark:text-[#8ab4f8]", solid: "bg-[#2563eb]" },

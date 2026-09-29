@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { useState } from "react";
 import { Mail, Lock, AlertCircle, LogIn, UserPlus, Sun, Moon, Loader2, User, Building2, CheckCircle2 } from "lucide-react";
 import { api, setToken } from "../../lib/api";
@@ -5,6 +8,7 @@ import { useDarkMode } from "../../hooks/useDarkMode";
 import { getInitials } from "../../utils/ticketUtils";
 import { Brand } from "../ui/Brand";
 import { MichiBuddy } from "../ui/MichiBuddy";
+import { Credits } from "../ui/Credits";
 
 const inputCls = "w-full border border-line-strong rounded-lg pl-9 pr-3 h-10 text-sm text-ink bg-field outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand placeholder:text-faint disabled:opacity-60";
 
@@ -161,6 +165,8 @@ export function LoginScreen({ onLogin }) {
           </button>
         </div>
       </div>
+
+      <Credits tone="dark" className="mt-6 text-center max-w-[400px]" />
     </div>
   );
 }

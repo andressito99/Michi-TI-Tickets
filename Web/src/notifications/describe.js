@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Convierte un evento en tiempo real en una notificación legible (o null si no hay que avisar).
 import { STATUS_MAP, PRIORITY_MAP } from "../utils/ticketUtils";
 import { STATUS_LABELS } from "../components/tickets/StatusBadge";

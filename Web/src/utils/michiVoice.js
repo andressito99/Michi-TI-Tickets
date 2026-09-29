@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // La "voz" de Michi: frases con personalidad gatuna para toda la app.
 
 export const pick = list => list[Math.floor(Math.random() * list.length)];

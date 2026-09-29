@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import 'package:flutter/material.dart';
 import '../features/auth/splash_screen.dart';
 import '../features/auth/login_screen.dart';

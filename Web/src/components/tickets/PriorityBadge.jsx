@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { AlertCircle, ChevronUp, Minus, ChevronDown } from "lucide-react";
 
 // Prioridades: icono en círculo (como la referencia) y pill con texto

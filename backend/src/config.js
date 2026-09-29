@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Toda la configuración sensible viene de variables de entorno (backend/.env).
 // No hay secretos con valores por defecto en el código: si falta alguno, el servidor no arranca.
 import path from "node:path";

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Michi, la mascota de la app: un gato naranja dibujado en SVG con varias poses.
 // Las animaciones (cola, parpadeo, saludo…) están en index.css y respetan "reducir movimiento".
 

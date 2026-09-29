@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Quita datos personales de un texto antes de publicarlo en el foro.
 // Es una primera pasada automática: el admin siempre revisa el texto antes de publicar.
 

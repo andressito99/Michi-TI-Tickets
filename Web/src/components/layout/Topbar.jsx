@@ -1,8 +1,12 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 import { useState, useRef, useEffect } from "react";
 import { Search, X, Sun, Moon, HelpCircle, LogOut, ChevronDown } from "lucide-react";
 import { NotificationBell } from "../../notifications/NotificationBell";
 import { Avatar } from "../ui/Avatar";
 import { Brand } from "../ui/Brand";
+import { Credits } from "../ui/Credits";
 
 export function Topbar({ search, onSearch, dark, onToggleDark, user, onLogout, onNavigate }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -82,6 +86,7 @@ export function Topbar({ search, onSearch, dark, onToggleDark, user, onLogout, o
               >
                 <LogOut size={15} /> Cerrar sesión
               </button>
+              <Credits className="px-4 py-2.5 border-t border-line bg-subtle" />
             </div>
           )}
         </div>

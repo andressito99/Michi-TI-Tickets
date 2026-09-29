@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 andressito99 y los colaboradores del proyecto Michi · Soporte TI con siete vidas
+
 // Recepción y almacenamiento seguro de capturas de pantalla.
 //
 // - Solo imágenes PNG, JPEG, GIF y WebP. El tipo se decide por los PRIMEROS BYTES del archivo
