@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, X, Sun, Moon, HelpCircle, Bell, LogOut, ChevronDown } from "lucide-react";
+import { Search, X, Sun, Moon, HelpCircle, LogOut, ChevronDown } from "lucide-react";
+import { NotificationBell } from "../../notifications/NotificationBell";
 import { Avatar } from "../ui/Avatar";
 import { Brand } from "../ui/Brand";
 
@@ -52,9 +53,7 @@ export function Topbar({ search, onSearch, dark, onToggleDark, user, onLogout, o
         <button onClick={onToggleDark} className={iconBtn} title={dark ? "Modo claro" : "Modo oscuro"}>
           {dark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-        <button className={iconBtn} title="Notificaciones">
-          <Bell size={18} />
-        </button>
+        <NotificationBell />
         <button className={iconBtn} title="Ayuda">
           <HelpCircle size={18} />
         </button>

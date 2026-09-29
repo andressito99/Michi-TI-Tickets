@@ -6,6 +6,7 @@ import { Avatar } from "../components/ui/Avatar";
 import { useConversaciones } from "../hooks/useConversaciones";
 import { categoryStyle } from "./categoryIcon";
 import { Michi } from "../components/ui/Michi";
+import { AttachButton, AttachmentGallery, DraftThumbs, useImageDraft } from "../components/tickets/Attachments";
 
 const SYSTEM_PREFIX = "[Sistema]";
 const isSystem = m => m.split(/\n\s*\n/).every(p => p.trim().startsWith(SYSTEM_PREFIX));
@@ -102,7 +103,7 @@ function ShareToForo({ ticketId }) {
   );
 }
 
-function Bubble({ mine, author, date, children }) {
+function Bubble({ mine, author, date, children, adjuntos = [] }) {
   return (
     <div className={`flex gap-2.5 ${mine ? "flex-row-reverse" : ""}`}>
       {!mine && <Avatar name={author} size="md" />}
@@ -113,13 +114,15 @@ function Bubble({ mine, author, date, children }) {
         }`}>
           {children}
         </div>
+        <AttachmentGallery adjuntos={adjuntos} size={96} className={`mt-2 ${mine ? "justify-end" : ""}`} />
       </div>
     </div>
   );
 }
 
 export function TicketThread({ ticket, user, onBack, onChanged }) {
-  const { conversaciones, loading, addConversacion } = useConversaciones(ticket._id);
+  const { conversaciones, adjuntosReporte, loading, addConversacion } = useConversaciones(ticket._id);
+  const draft = useImageDraft(); // capturas preparadas para enviar
   const [text, setText]       = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError]     = useState("");
@@ -131,11 +134,11 @@ export function TicketThread({ ticket, user, onBack, onChanged }) {
 
   const send = async () => {
     const msg = text.trim();
-    if (!msg || sending) return;
+    if ((!msg && draft.files.length === 0) || sending) return;
     setSending(true); setError("");
-    const res = await addConversacion(msg);
+    const res = await addConversacion(msg, draft.files);
     setSending(false);
-    if (res?.success) { setText(""); onChanged(); }
+    if (res?.success) { setText(""); draft.clear(); onChanged(); }
     else setError(res?.error || "No se pudo enviar el mensaje");
   };
 
@@ -189,7 +192,7 @@ export function TicketThread({ ticket, user, onBack, onChanged }) {
 
       {/* Conversación */}
       <section className="bg-subtle rounded-2xl border border-line p-4 sm:p-6 flex flex-col gap-4">
-        <Bubble mine author={user.name} date={when(ticket.rawFecha)}>{ticket.desc || "Sin descripción."}</Bubble>
+        <Bubble mine author={user.name} date={when(ticket.rawFecha)} adjuntos={adjuntosReporte}>{ticket.desc || "Sin descripción."}</Bubble>
 
         {loading && conversaciones.length === 0 && (
           <div className="flex justify-center py-4"><Loader2 size={18} className="animate-spin text-faint" /></div>
@@ -205,7 +208,7 @@ export function TicketThread({ ticket, user, onBack, onChanged }) {
               </div>
             ))
           ) : (
-            <Bubble key={c.id} mine={c.usuarioId === user.id} author={c.usuario} date={when(c.rawFecha)}>
+            <Bubble key={c.id} mine={c.usuarioId === user.id} author={c.usuario} date={when(c.rawFecha)} adjuntos={c.adjuntos}>
               {c.mensaje}
             </Bubble>
           )
@@ -221,28 +224,36 @@ export function TicketThread({ ticket, user, onBack, onChanged }) {
       </section>
 
       {/* Responder */}
-      <section className="bg-surface rounded-2xl border border-line p-3 sm:p-4 sticky bottom-4 shadow-lg">
+      <section
+        {...draft.dropProps}
+        className={`bg-surface rounded-2xl border p-3 sm:p-4 sticky bottom-4 shadow-lg transition ${
+          draft.dragging ? "border-brand ring-2 ring-brand/30" : "border-line"
+        }`}
+      >
         {ticket.status === "resolved" && (
           <p className="text-xs text-muted mb-2 px-1">
             Este ticket está resuelto. Si el problema continúa, escríbenos y lo revisaremos.
           </p>
         )}
+        <div className="-mx-3 sm:-mx-4"><DraftThumbs draft={draft} /></div>
         <div className="flex items-end gap-2">
+          <AttachButton draft={draft} disabled={sending} compact />
           <textarea
             value={text} onChange={e => setText(e.target.value)} rows={2}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder="Escribe un mensaje al equipo de soporte…"
+            onPaste={draft.onPaste}
+            placeholder={draft.dragging ? "Suelta aquí la imagen…" : "Escribe un mensaje al equipo de soporte…"}
             className="flex-1 px-3 py-2.5 rounded-xl border border-line-strong bg-field text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 placeholder:text-faint resize-none"
           />
           <button
-            onClick={send} disabled={!text.trim() || sending} title="Enviar"
+            onClick={send} disabled={(!text.trim() && draft.files.length === 0) || sending} title="Enviar"
             className="h-11 w-11 rounded-xl bg-brand hover:bg-brand-hover text-white flex items-center justify-center disabled:opacity-50 flex-shrink-0"
           >
             {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </button>
         </div>
         {error && <p className="text-xs text-danger mt-1.5 px-1">{error}</p>}
-        <p className="text-[11px] text-faint mt-1.5 px-1 hidden sm:block">Enter para enviar · Shift + Enter para salto de línea</p>
+        <p className="text-[11px] text-faint mt-1.5 px-1 hidden sm:block">Enter para enviar · Shift + Enter para salto de línea · Ctrl + V o arrastra para adjuntar una captura</p>
       </section>
     </div>
   );

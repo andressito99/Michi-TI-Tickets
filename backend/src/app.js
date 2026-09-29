@@ -11,6 +11,8 @@ import conversacionRoutes from "./routes/conversaciones.js";
 import otrosIncidentesRoutes from "./routes/otrosIncidentes.js";
 import aiRoutes from "./routes/ai.js";
 import foroRoutes from "./routes/foro.js";
+import adjuntosRoutes from "./routes/adjuntos.js";
+import { addClient } from "./lib/realtime.js";
 import { agentes, incidentes, usuarios } from "./routes/catalogo.js";
 
 export const app = express();
@@ -39,7 +41,12 @@ app.use("/api/auth", authRoutes);
 
 // Todo lo demás requiere sesión
 app.use("/api", requireAuth);
+
+// Canal de notificaciones en tiempo real (Server-Sent Events): la conexión queda abierta
+app.get("/api/events", (req, res) => addClient(req.user, req, res));
+
 app.use("/api/tickets",          ticketRoutes);
+app.use("/api/adjuntos",         adjuntosRoutes);
 app.use("/api/conversaciones",   conversacionRoutes);
 app.use("/api/otros-incidentes", otrosIncidentesRoutes);
 app.use("/api/incidentes",       incidentes);

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { pick, query, queryOne } from "../db.js";
 import { HttpError, isStaff, requireAdmin } from "../middleware/auth.js";
 import { anonimizar } from "../lib/anonimizar.js";
+import { publish, toAdmins } from "../lib/realtime.js";
 
 const router = Router();
 
@@ -202,6 +203,8 @@ router.post("/proponer", async (req, res) => {
     Propuesto_por: req.user.id,
   }]);
   res.status(201).json({ estado: "propuesta" });
+  // Aviso al admin sin revelar quién lo propuso
+  publish({ type: "foro.proposed", titulo: borrador.Titulo }, toAdmins);
 });
 
 // ── Detalle, votos y comentarios ────────────────────────────

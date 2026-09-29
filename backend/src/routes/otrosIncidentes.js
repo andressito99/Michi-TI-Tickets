@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { pick, query, queryOne, transaction } from "../db.js";
 import { HttpError, isStaff, requireStaff } from "../middleware/auth.js";
+import { notifyTicket, publish, toAdmins } from "../lib/realtime.js";
+import { ADJUNTO_FIELDS, deleteStoredFiles, receiveImages, saveImages, validateImages } from "../lib/uploads.js";
 
 const router = Router();
 
@@ -28,7 +30,29 @@ router.post("/", async (req, res) => {
   }
 
   const result = await query("INSERT INTO Otros_incidentes SET ?", [data]);
-  res.status(201).json(await queryOne("SELECT * FROM Otros_incidentes WHERE id = ?", [result.insertId]));
+  const oi = await queryOne("SELECT * FROM Otros_incidentes WHERE id = ?", [result.insertId]);
+  res.status(201).json(oi);
+
+  publish({
+    type: "otro.created", otroId: oi.id, categoria: oi.Categoria,
+    extracto: String(oi.Descripcion ?? "").slice(0, 120), actorId: req.user.id, actor: req.user.usuario,
+  }, toAdmins);
+});
+
+// POST /api/otros-incidentes/:id/adjuntos → capturas del reporte (solo su autor)
+router.post("/:id/adjuntos", receiveImages, async (req, res) => {
+  const oi = await queryOne("SELECT id, Usuario_ID FROM Otros_incidentes WHERE id = ?", [req.params.id]);
+  if (!oi || oi.Usuario_ID !== req.user.id) throw new HttpError(404, "Reporte no encontrado");
+  const validated = validateImages(req.files);
+  if (validated.length === 0) throw new HttpError(400, "No se recibió ninguna imagen");
+  res.status(201).json(await saveImages(validated, { otroId: oi.id, userId: req.user.id }));
+});
+
+// GET /api/otros-incidentes/:id/adjuntos → capturas del reporte (su autor o el staff)
+router.get("/:id/adjuntos", async (req, res) => {
+  const oi = await queryOne("SELECT id, Usuario_ID FROM Otros_incidentes WHERE id = ?", [req.params.id]);
+  if (!oi || (!isStaff(req.user) && oi.Usuario_ID !== req.user.id)) throw new HttpError(404, "Reporte no encontrado");
+  res.json(await query(`SELECT ${ADJUNTO_FIELDS} FROM Adjuntos WHERE Otro_ID = ? ORDER BY id`, [oi.id]));
 });
 
 // POST /api/otros-incidentes/:id/convertir  { Incidente_ID, Prioridad, Agente }
@@ -54,17 +78,23 @@ router.post("/:id/convertir", requireStaff, async (req, res) => {
       Descripcion:  oi.Descripcion,
       Departamento: oi.Departamento,
     }]);
+    // Las capturas del reporte pasan a ser capturas del reporte original del ticket
+    await conn.query("UPDATE Adjuntos SET Ticket_ID = ?, Otro_ID = NULL WHERE Otro_ID = ?", [result.insertId, oi.id]);
     await conn.query("DELETE FROM Otros_incidentes WHERE id = ?", [oi.id]);
     return result.insertId;
   });
 
   res.status(201).json(await queryOne("SELECT * FROM Tickets WHERE id = ?", [ticketId]));
+  notifyTicket("ticket.created", ticketId, { actorId: req.user.id, actor: req.user.usuario, desdeOtro: true })
+    .catch(err => console.error("[realtime]", err.message));
 });
 
-// DELETE /api/otros-incidentes/:id
+// DELETE /api/otros-incidentes/:id (también borra del disco sus capturas)
 router.delete("/:id", requireStaff, async (req, res) => {
+  const archivos = await query("SELECT Archivo FROM Adjuntos WHERE Otro_ID = ?", [req.params.id]);
   const result = await query("DELETE FROM Otros_incidentes WHERE id = ?", [req.params.id]);
   if (result.affectedRows === 0) throw new HttpError(404, "Incidente no encontrado");
+  await deleteStoredFiles(archivos.map(a => a.Archivo));
   res.status(204).end();
 });
 

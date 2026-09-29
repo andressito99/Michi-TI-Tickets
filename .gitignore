@@ -53,3 +53,6 @@ backups/
 .venv/
 __pycache__/
 *.pyc
+
+# Capturas adjuntas subidas por los usuarios (datos privados)
+backend/uploads/

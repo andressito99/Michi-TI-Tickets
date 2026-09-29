@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "../lib/api";
+import { isTicketEvent, useRealtimeRefresh } from "../lib/realtime";
 import { mapDbTicket } from "../utils/ticketUtils";
 
-const POLL_INTERVAL_MS = 20_000;
 
 /**
  * Datos del portal del usuario: sus tickets (con el último mensaje)
@@ -60,9 +60,10 @@ export function useMyTickets(user) {
 
   useEffect(() => {
     load();
-    const interval = setInterval(() => load({ silent: true }), POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
   }, [load]);
+
+  // Tiempo real: respuestas del soporte, cambios de estado y reportes convertidos en ticket
+  useRealtimeRefresh(isTicketEvent, () => load({ silent: true }));
 
   return { tickets, pending, loading, error, refresh: () => load() };
 }

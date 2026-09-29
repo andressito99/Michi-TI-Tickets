@@ -6,6 +6,7 @@ import { TicketsView } from "../views/TicketsView";
 import { ForoBrowser } from "../foro/ForoBrowser";
 import { useTickets } from "../hooks/useTickets";
 import { useAgents } from "../hooks/useAgents";
+import { useNotificationHandler } from "../notifications/NotificationsProvider";
 
 const AGENT_NAV_ITEMS = [
   { key: "tickets",   label: "Mis tickets", Icon: Inbox, hasBadge: true },
@@ -28,6 +29,8 @@ export function AgentPanel({ user, onLogout, dark, onToggleDark }) {
     setSelectedId(id);
     setActiveView("tickets");
   };
+
+  useNotificationHandler(note => { if (note.ticketId) openTicket(`TK-${String(note.ticketId).padStart(4, "0")}`); });
 
   const agentTickets   = tickets.filter(t => t.agent === user.agentName || t.requester === user.agentName);
   const selectedTicket = agentTickets.find(t => t.id === selectedId) ?? null;

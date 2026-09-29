@@ -137,3 +137,28 @@ CREATE TABLE IF NOT EXISTS Foro_comentarios (
   CONSTRAINT fk_com_pub FOREIGN KEY (Publicacion_ID) REFERENCES Foro_publicaciones (id) ON DELETE CASCADE,
   CONSTRAINT fk_com_usr FOREIGN KEY (Usuario_ID)     REFERENCES Usuarios (id)           ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Capturas adjuntas ───────────────────────────────────────
+-- Las imágenes se guardan en disco (backend/uploads, fuera de la web) con un nombre
+-- aleatorio; aquí solo va su información. Pertenecen a un ticket (y opcionalmente a un
+-- mensaje de su conversación) o a un reporte "Otro" todavía sin convertir.
+CREATE TABLE IF NOT EXISTS Adjuntos (
+  id               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  Ticket_ID        INT UNSIGNED NULL,
+  Otro_ID          INT UNSIGNED NULL,
+  Conversacion_ID  INT UNSIGNED NULL,
+  Usuario_ID       INT UNSIGNED NULL,
+  Nombre           VARCHAR(191) NOT NULL COMMENT 'Nombre original (saneado)',
+  Archivo          VARCHAR(100) NOT NULL COMMENT 'Nombre aleatorio en disco',
+  Tipo             VARCHAR(50)  NOT NULL COMMENT 'image/png, image/jpeg, image/gif o image/webp',
+  Tamano           INT UNSIGNED NOT NULL,
+  created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_adj_ticket (Ticket_ID),
+  KEY idx_adj_otro   (Otro_ID),
+  KEY idx_adj_conv   (Conversacion_ID),
+  CONSTRAINT fk_adj_ticket  FOREIGN KEY (Ticket_ID)       REFERENCES Tickets (id)          ON DELETE CASCADE,
+  CONSTRAINT fk_adj_otro    FOREIGN KEY (Otro_ID)         REFERENCES Otros_incidentes (id) ON DELETE CASCADE,
+  CONSTRAINT fk_adj_conv    FOREIGN KEY (Conversacion_ID) REFERENCES Conversaciones (id)   ON DELETE CASCADE,
+  CONSTRAINT fk_adj_usuario FOREIGN KEY (Usuario_ID)      REFERENCES Usuarios (id)         ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -6,6 +6,8 @@ import { PriorityBadge } from "../components/tickets/PriorityBadge";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { getInitials, STATUS_MAP, PRIORITY_MAP } from "../utils/ticketUtils";
 import { Michi } from "../components/ui/Michi";
+import { useRealtimeRefresh } from "../lib/realtime";
+import { AttachmentGallery } from "../components/tickets/Attachments";
 
 // ── Otros Incidentes hook ──────────────────────────────────────
 function useOtrosIncidentes() {
@@ -67,6 +69,8 @@ function useOtrosIncidentes() {
   };
 
   useEffect(() => { load(); }, []);
+  // Tiempo real: reportes "Otro" nuevos o convertidos desde otra sesión
+  useRealtimeRefresh(e => e.type === "otro.created" || (e.type === "ticket.created" && e.desdeOtro), () => load());
   return { items, incidentes, agents, loading, error, refresh: load, convertToTicket };
 }
 
@@ -119,6 +123,12 @@ function ConvertModal({ oi, agents, incidentes, onClose, onConvert }) {
   const [err,         setErr]         = useState("");
   const [aiLoading,   setAiLoading]   = useState(false);
   const [aiHint,      setAiHint]      = useState(null);
+  const [capturas,    setCapturas]    = useState([]);
+
+  // Capturas que adjuntó el usuario: ayudan a clasificar el reporte
+  useEffect(() => {
+    api.get(`/otros-incidentes/${oi._id}/adjuntos`).then(setCapturas).catch(() => setCapturas([]));
+  }, [oi._id]);
 
   // Pide a la IA (DeepSeek, vía backend) que clasifique el reporte y rellena el formulario
   const handleSuggest = async () => {
@@ -178,6 +188,12 @@ function ConvertModal({ oi, agents, incidentes, onClose, onConvert }) {
         </div>
         
         <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
+          {capturas.length > 0 && (
+            <div>
+              <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1.5">Capturas del usuario</p>
+              <AttachmentGallery adjuntos={capturas} size={72} />
+            </div>
+          )}
           <div>
             <button
               type="button" onClick={handleSuggest} disabled={aiLoading || saving}

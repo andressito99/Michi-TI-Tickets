@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { api } from "../lib/api";
+import { isTicketEvent, useRealtimeRefresh } from "../lib/realtime";
 import { mapDbTicket } from "../utils/ticketUtils";
 
-const POLL_INTERVAL_MS = 15_000;
 
 export function useTickets(agentName = null) {
   const [tickets, setTickets] = useState([]);
@@ -42,10 +42,10 @@ export function useTickets(agentName = null) {
 
   useEffect(() => {
     loadTickets();
-    // Sustituye al realtime de Supabase: sondeo periódico a la API
-    const interval = setInterval(() => loadTickets({ silent: true }), POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
   }, [loadTickets]);
+
+  // Tiempo real: la API avisa de tickets nuevos, cambios y mensajes (sin consultar cada X segundos)
+  useRealtimeRefresh(isTicketEvent, () => loadTickets({ silent: true }));
 
   const filteredTickets = useMemo(() => {
     let list = agentName ? tickets.filter(t => t.agent === agentName || t.requester === agentName) : tickets;

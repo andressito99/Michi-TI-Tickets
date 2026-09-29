@@ -1,6 +1,10 @@
 // Toda la configuración sensible viene de variables de entorno (backend/.env).
 // No hay secretos con valores por defecto en el código: si falta alguno, el servidor no arranca.
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 const env = process.env;
+const BACKEND_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const errors = [];
 
@@ -41,6 +45,13 @@ export const config = {
   ai: {
     url:   (env.AI_SERVICE_URL || "http://127.0.0.1:8000").replace(/\/$/, ""),
     token: secret("AI_SERVICE_TOKEN", 16),
+  },
+
+  // Capturas adjuntas: carpeta fuera de la web y límites
+  uploads: {
+    dir:      path.resolve(BACKEND_ROOT, env.UPLOAD_DIR || "uploads"),
+    maxBytes: (Number(env.MAX_UPLOAD_MB) || 5) * 1024 * 1024,
+    maxFiles: 5,
   },
 };
 

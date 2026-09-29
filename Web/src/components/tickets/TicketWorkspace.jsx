@@ -4,6 +4,7 @@ import {
   Clock, CheckCircle2, Timer, Building2, Tag, History, Info, MessageSquareText, Activity, BookOpenCheck,
 } from "lucide-react";
 import { ForoEditor } from "../../foro/ForoEditor";
+import { AttachButton, AttachmentGallery, DraftThumbs, useImageDraft } from "./Attachments";
 import { STATUSES, STATUS_LABELS } from "./StatusBadge";
 import { PRIORITIES, PriorityIcon } from "./PriorityBadge";
 import { Avatar } from "../ui/Avatar";
@@ -96,7 +97,7 @@ function Section({ title, count, Icon, children, defaultOpen = false }) {
 }
 
 // ── Tarjetas de la conversación ─────────────────────────────────────────
-function MessageCard({ author, date, to, children, highlight }) {
+function MessageCard({ author, date, to, children, highlight, adjuntos = [] }) {
   return (
     <div className={`bg-surface rounded-xl border px-5 py-4 ${highlight ? "border-brand/30" : "border-line"}`}>
       <div className="flex items-start gap-3">
@@ -108,6 +109,7 @@ function MessageCard({ author, date, to, children, highlight }) {
           </div>
           {to && <p className="text-xs text-faint mb-2">{to}</p>}
           <div className="text-sm text-ink-2 leading-relaxed whitespace-pre-wrap">{children}</div>
+          <AttachmentGallery adjuntos={adjuntos} className="mt-3" />
         </div>
       </div>
     </div>
@@ -128,7 +130,8 @@ function SystemEvent({ text, author, date }) {
 
 // ── Workspace ───────────────────────────────────────────────────────────
 export function TicketWorkspace({ ticket, agents, isAgent, onSave, onClose }) {
-  const { conversaciones, loading, addConversacion } = useConversaciones(ticket._id);
+  const { conversaciones, adjuntosReporte, loading, addConversacion } = useConversaciones(ticket._id);
+  const draft = useImageDraft(); // capturas preparadas para enviar con la respuesta
   const [reply, setReply]         = useState("");
   const [sending, setSending]     = useState(false);
   const [updating, setUpdating]   = useState(false);
@@ -182,11 +185,11 @@ export function TicketWorkspace({ ticket, agents, isAgent, onSave, onClose }) {
 
   const sendReply = async () => {
     const text = reply.trim();
-    if (!text || sending) return;
+    if ((!text && draft.files.length === 0) || sending) return;
     setSending(true);
-    const res = await addConversacion(text);
+    const res = await addConversacion(text, draft.files);
     setSending(false);
-    if (res?.success) { setReply(""); flash("ok", "Respuesta enviada"); }
+    if (res?.success) { setReply(""); draft.clear(); flash("ok", "Respuesta enviada"); }
     else flash("error", res?.error || "No se pudo enviar la respuesta");
   };
 
@@ -248,7 +251,12 @@ export function TicketWorkspace({ ticket, agents, isAgent, onSave, onClose }) {
 
         <div className="flex-1 overflow-y-auto thin-scroll px-4 @3xl:px-6 py-5 flex flex-col gap-4">
           {/* Editor de respuesta */}
-          <div className="bg-surface rounded-xl border border-line shadow-sm focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/10 transition">
+          <div
+            {...draft.dropProps}
+            className={`bg-surface rounded-xl border shadow-sm focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/10 transition ${
+              draft.dragging ? "border-brand ring-2 ring-brand/30" : "border-line"
+            }`}
+          >
             <div className="px-4 flex items-center gap-5 border-b border-line">
               <span className="py-2.5 text-xs font-semibold text-brand border-b-2 border-brand -mb-px">Respuesta pública</span>
               <span className="py-2.5 text-xs text-faint">Visible para el usuario en la app</span>
@@ -263,11 +271,14 @@ export function TicketWorkspace({ ticket, agents, isAgent, onSave, onClose }) {
               value={reply}
               onChange={e => setReply(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) sendReply(); }}
-              placeholder="Escribe una respuesta…  (Ctrl + Enter para enviar)"
+              onPaste={draft.onPaste}
+              placeholder={draft.dragging ? "Suelta aquí la imagen…" : "Escribe una respuesta…  (Ctrl + Enter para enviar · Ctrl + V para pegar una captura)"}
               rows={4}
               className="w-full px-4 py-3 bg-transparent text-sm text-ink outline-none resize-none placeholder:text-faint leading-relaxed"
             />
+            <DraftThumbs draft={draft} />
             <div className="px-3 py-2 flex items-center gap-2 border-t border-line">
+              <AttachButton draft={draft} disabled={sending} />
               <button
                 onClick={suggestReply} disabled={aiLoading || sending}
                 className="h-8 px-2.5 rounded-lg text-xs font-semibold text-[#7c3aed] dark:text-[#a78bfa] hover:bg-[#7c3aed]/10 flex items-center gap-1.5 disabled:opacity-60 transition-colors"
@@ -281,7 +292,7 @@ export function TicketWorkspace({ ticket, agents, isAgent, onSave, onClose }) {
                 </span>
               )}
               <button
-                onClick={sendReply} disabled={!reply.trim() || sending}
+                onClick={sendReply} disabled={(!reply.trim() && draft.files.length === 0) || sending}
                 className="ml-auto h-8 px-3.5 rounded-lg bg-brand hover:bg-brand-hover text-white text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
@@ -300,7 +311,7 @@ export function TicketWorkspace({ ticket, agents, isAgent, onSave, onClose }) {
                     <SystemEvent key={`${c.id}-${i}`} text={text} author={c.usuario} date={fullDate(c.rawFecha)} />
                   ))
                 : (
-                  <MessageCard key={c.id} author={c.usuario} date={fullDate(c.rawFecha)}>
+                  <MessageCard key={c.id} author={c.usuario} date={fullDate(c.rawFecha)} adjuntos={c.adjuntos}>
                     {c.mensaje}
                   </MessageCard>
                 )
@@ -308,7 +319,7 @@ export function TicketWorkspace({ ticket, agents, isAgent, onSave, onClose }) {
           )}
 
           {/* Reporte original */}
-          <MessageCard author={ticket.requester} date={fullDate(ticket.rawFecha)} to="Reporte original" highlight>
+          <MessageCard author={ticket.requester} date={fullDate(ticket.rawFecha)} to="Reporte original" highlight adjuntos={adjuntosReporte}>
             {ticket.desc || "Sin descripción."}
           </MessageCard>
         </div>

@@ -28,6 +28,7 @@
    - [Foro de soluciones](#foro-de-soluciones)
    - [Panel de administración](#panel-de-administración)
    - [Panel del agente](#panel-del-agente)
+   - [Avisos en tiempo real y capturas](#avisos-en-tiempo-real-y-capturas)
    - [Modo oscuro y diseño adaptable](#modo-oscuro-y-diseño-adaptable)
    - [Michi, la mascota](#michi-la-mascota)
 3. [Arquitectura](#arquitectura)
@@ -38,12 +39,13 @@
 8. [Roles y permisos](#roles-y-permisos)
 9. [Inteligencia artificial](#inteligencia-artificial)
 10. [Foro y anonimato](#foro-y-anonimato)
-11. [Seguridad](#seguridad)
-12. [API REST](#api-rest)
-13. [Base de datos](#base-de-datos)
-14. [Scripts disponibles](#scripts-disponibles)
-15. [Solución de problemas](#solución-de-problemas)
-16. [Hoja de ruta](#hoja-de-ruta)
+11. [Tiempo real y capturas: cómo funcionan](#tiempo-real-y-capturas-cómo-funcionan)
+12. [Seguridad](#seguridad)
+13. [API REST](#api-rest)
+14. [Base de datos](#base-de-datos)
+15. [Scripts disponibles](#scripts-disponibles)
+16. [Solución de problemas](#solución-de-problemas)
+17. [Hoja de ruta](#hoja-de-ruta)
 
 ---
 
@@ -60,6 +62,8 @@ Michi centraliza el soporte técnico de una empresa en un solo lugar. Hay tres t
 **Funciones principales**
 
 - 🎫 **Tickets con conversación**: cada ticket es un hilo de mensajes entre el usuario y el soporte, con historial de cambios.
+- 🔔 **Avisos en tiempo real**: tickets nuevos, respuestas y cambios de estado llegan al instante, sin recargar la página.
+- 📎 **Capturas de pantalla**: se adjuntan al reportar o al responder (botón, arrastrar o pegar con Ctrl+V).
 - 🧭 **Reporte guiado**: el usuario elige categoría y tipo de problema; el ticket llega directamente al agente y con la prioridad correctos.
 - 📚 **Foro de soluciones anónimo**: los casos resueltos se publican sin datos personales para que otros los resuelvan solos.
 - 🤖 **IA con DeepSeek**: clasifica reportes, redacta respuestas y convierte tickets en publicaciones del foro.
@@ -157,6 +161,26 @@ El agente ve solo **sus tickets asignados**, con el mismo espacio de trabajo que
 
 <img src="docs/screenshots/20-agente-dashboard.png" alt="Dashboard del agente" width="100%" />
 
+### Avisos en tiempo real y capturas
+
+**Capturas al reportar.** El usuario puede adjuntar hasta 5 imágenes al describir el problema: con el botón, arrastrándolas o **pegándolas con Ctrl+V** (lo más cómodo para una captura de pantalla).
+
+<img src="docs/screenshots/22-reportar-con-captura.png" alt="Reportar un problema con una captura adjunta" width="100%" />
+
+**El equipo se entera al instante.** En cuanto el usuario envía el reporte, al admin y al agente asignado les llega un aviso y la lista de tickets se actualiza sola, sin recargar. Pulsar el aviso abre el ticket.
+
+<img src="docs/screenshots/23-aviso-tiempo-real.png" alt="Aviso de nuevo ticket en tiempo real" width="100%" />
+
+| La captura en el ticket | Visor a tamaño completo |
+|---|---|
+| <img src="docs/screenshots/24-ticket-con-captura.png" alt="Ticket con la captura del usuario" /> | <img src="docs/screenshots/25-visor-capturas.png" alt="Visor de capturas" /> |
+| Las imágenes del reporte aparecen en el *Reporte original*; las de cada respuesta, en su mensaje. El agente también puede responder con capturas. | Al pulsar una miniatura se abre a pantalla completa, con flechas para pasar de imagen, **Esc** para cerrar y botón de descarga. |
+
+| El usuario recibe la respuesta en vivo | Centro de notificaciones |
+|---|---|
+| <img src="docs/screenshots/26-chat-en-vivo.png" alt="La respuesta del soporte aparece en el chat sin recargar" /> | <img src="docs/screenshots/27-campana-notificaciones.png" alt="Campana de notificaciones" /> |
+| La respuesta del soporte (con su imagen) aparece en el chat del usuario sin recargar, junto con un aviso. | La **campana** guarda el historial de avisos, muestra si la conexión está activa (*En tiempo real*) y permite activar las **notificaciones del escritorio** para enterarse con la pestaña en segundo plano. La pestaña del navegador muestra el número de avisos sin leer: *(2) Michi*. |
+
 ### Modo oscuro y diseño adaptable
 
 Toda la aplicación tiene **modo oscuro** (se recuerda la preferencia). El espacio de tickets se adapta al ancho disponible: en pantallas medianas las propiedades se abren como un panel lateral con **Detalles**, y en pantallas estrechas se muestra la lista *o* el ticket.
@@ -191,14 +215,18 @@ flowchart LR
     DS["☁️ API de DeepSeek"]
 
     W -- "HTTP + JWT" --> API
+    API -. "avisos en tiempo real (SSE)" .-> W
     M -- "HTTP + JWT" --> API
     API -- "SQL parametrizado" --> DB
+    API -- "capturas" --> UP[("🖼️ backend/uploads<br/>fuera de la web")]
     API -- "token interno + texto ya anonimizado" --> IA
     IA -- "API key (solo en ai/.env)" --> DS
 ```
 
 - **La API Node es la única que toca la base de datos.** Los clientes (web y móvil) nunca se conectan directamente a MySQL.
 - **El servicio de IA no tiene acceso a la base de datos**: la API le envía solo el contexto necesario, ya anonimizado cuando corresponde. Escucha únicamente en `127.0.0.1` y exige un token interno, así que la clave de DeepSeek nunca sale del servidor.
+- **Avisos en tiempo real con SSE:** cada navegador mantiene abierta una conexión (`GET /api/events`) por la que la API envía los avisos al momento. Ver [cómo funciona](#tiempo-real-y-capturas-cómo-funcionan).
+- **Las capturas se guardan en disco** (`backend/uploads`, fuera de la web) y solo se descargan a través de la API, que comprueba permisos.
 - **La web en desarrollo** redirige `/api` al backend mediante el proxy de Vite, por lo que no hay problemas de CORS.
 
 ---
@@ -208,7 +236,7 @@ flowchart LR
 | Parte | Carpeta | Tecnologías |
 |---|---|---|
 | Base de datos | `database/` | MySQL 5.7+ (el de MAMP) |
-| API REST | `backend/` | Node.js 20.12+, Express 5, mysql2, bcryptjs, jsonwebtoken, helmet, express-rate-limit |
+| API REST | `backend/` | Node.js 20.12+, Express 5, mysql2, bcryptjs, jsonwebtoken, helmet, express-rate-limit, multer (subida de imágenes), Server-Sent Events |
 | Servicio de IA | `ai/` | Python 3.10+, FastAPI, Uvicorn, SDK `openai` (compatible con DeepSeek), Pydantic |
 | Web | `Web/` | React 19, Vite, Tailwind CSS 4, Lucide (iconos) |
 | App móvil | `movil/` | Flutter, `http`, `shared_preferences`, notificaciones locales |
@@ -229,7 +257,10 @@ TI-Tickets/
 │   │   ├── db.js               # Conexión a MySQL (UTC, consultas parametrizadas)
 │   │   ├── middleware/auth.js  # JWT y control de roles
 │   │   ├── lib/anonimizar.js   # Quita nombres, correos, teléfonos e IPs
-│   │   └── routes/             # auth, tickets, conversaciones, catálogo, foro, IA…
+│   │   ├── lib/realtime.js     # Avisos en tiempo real (SSE): a quién se envía cada evento
+│   │   ├── lib/uploads.js      # Recepción y validación de capturas
+│   │   └── routes/             # auth, tickets, conversaciones, adjuntos, catálogo, foro, IA…
+│   ├── uploads/                # Capturas subidas (NO se sube a git)
 │   └── scripts/
 │       ├── db-init.js          # Crea la base de datos (y datos demo con --seed)
 │       └── migrate-from-supabase.js
@@ -244,8 +275,9 @@ TI-Tickets/
 │       ├── portal/             # Portal sencillo para usuarios
 │       ├── foro/               # Foro de soluciones
 │       ├── views/              # Dashboard, usuarios, reportes, configuración…
-│       ├── components/         # Tickets, layout, Michi…
-│       └── lib/api.js          # Cliente HTTP de la API
+│       ├── components/         # Tickets, capturas adjuntas, layout, Michi…
+│       ├── notifications/      # Avisos, campana y notificaciones del escritorio
+│       └── lib/                # api.js (cliente HTTP) y realtime.js (conexión SSE)
 ├── movil/                      # App móvil (Flutter)
 ├── docs/screenshots/           # Capturas de este README
 ├── .githooks/pre-commit        # Impide subir secretos a git
@@ -371,6 +403,18 @@ flutter run
 2. Sirve `dist/` con cualquier servidor (Nginx, Apache, un hosting estático) y redirige `/api` a la API Node (o define `VITE_API_URL` antes de compilar).
 3. En `backend/.env`: `NODE_ENV=production` y `CORS_ORIGINS` con el dominio real (es obligatorio en producción).
 4. Usa HTTPS y mantén el servicio de IA accesible solo desde el servidor de la API.
+5. Si pones Nginx delante de la API, desactiva el *buffering* en la ruta de eventos para que los avisos no se retrasen:
+
+   ```nginx
+   location /api/events {
+       proxy_pass http://127.0.0.1:3000;
+       proxy_http_version 1.1;
+       proxy_set_header Connection "";
+       proxy_buffering off;
+       proxy_read_timeout 1h;
+   }
+   ```
+6. Incluye la carpeta `backend/uploads/` en tus copias de seguridad: ahí están las capturas.
 
 ---
 
@@ -394,6 +438,8 @@ Todos los secretos viven **solo** en archivos `.env`, que **nunca se suben a git
 | `AI_SERVICE_TOKEN` | ✅ | Token compartido con el servicio de IA. Mínimo 16 caracteres |
 | `SEED_ADMIN_PASSWORD`, `SEED_AGENT_PASSWORD`, `SEED_USER_PASSWORD` | | Contraseñas de las cuentas demo que crea `npm run db:seed` |
 | `SUPABASE_URL`, `SUPABASE_KEY` | | Solo para migrar datos desde Supabase |
+| `UPLOAD_DIR` | | Carpeta de las capturas, relativa a `backend/` (por defecto `uploads`). Nunca dentro de la web |
+| `MAX_UPLOAD_MB` | | Tamaño máximo de cada imagen en MB (por defecto `5`) |
 
 ### `ai/.env`
 
@@ -417,6 +463,8 @@ Solo contienen la URL de la API (`VITE_API_URL` y `API_URL`). **Todo lo que pong
 |---|:---:|:---:|:---:|
 | Reportar problemas y ver **sus** tickets | ✅ | | |
 | Escribir en la conversación de un ticket | Solo los suyos | ✅ | ✅ |
+| Adjuntar y ver capturas | Solo en los suyos | ✅ | ✅ |
+| Recibir avisos en tiempo real | De sus tickets | De sus tickets asignados | De todo |
 | Ver todos los tickets | | ✅ | ✅ |
 | Cambiar el estado de un ticket | | ✅ | ✅ |
 | Reasignar agente y cambiar la prioridad | | | ✅ |
@@ -467,6 +515,54 @@ flowchart LR
 
 ---
 
+## Tiempo real y capturas: cómo funcionan
+
+### Avisos en tiempo real (Server-Sent Events)
+
+```mermaid
+sequenceDiagram
+    participant J as Juan (portal)
+    participant API as API Node
+    participant A as Admin / agente
+    A->>API: GET /api/events (queda abierta)
+    J->>API: GET /api/events (queda abierta)
+    J->>API: POST /api/tickets (nuevo reporte)
+    API-->>A: evento ticket.created
+    Note over A: aviso + la lista se recarga sola
+    A->>API: POST /api/tickets/17/conversaciones (respuesta + imagen)
+    API-->>J: evento message.created
+    Note over J: aviso + el mensaje aparece en el chat
+```
+
+- **Por qué SSE y no WebSocket:** los avisos solo van del servidor al navegador. SSE usa HTTP normal, atraviesa proxies y no necesita librerías.
+- **Cada evento lleva solo lo imprescindible** (tipo, código del ticket, título, autor). La pantalla vuelve a pedir los datos a la API, que es la que aplica los permisos.
+- **A quién le llega cada evento:**
+
+  | Evento | Admin | Agente asignado | Dueño del ticket |
+  |---|:---:|:---:|:---:|
+  | Ticket nuevo | ✅ | ✅ | (lo creó él) |
+  | Cambio de estado, prioridad o agente | ✅ | ✅ (también el anterior si se reasigna) | ✅ estado |
+  | Mensaje nuevo | ✅ | ✅ | ✅ |
+  | Reporte «Otro» nuevo · propuesta para el foro | ✅ | | |
+
+  Nadie recibe avisos de lo que hace él mismo, y un usuario nunca recibe eventos de tickets ajenos.
+- **Reconexión automática:** si la conexión se corta, el navegador reintenta (1 s, 2 s, 4 s… hasta 30 s) y, al volver, recarga lo que pudo perderse. El servidor manda un *latido* cada 15 s; si pasan 40 s sin recibir nada, el navegador da la conexión por muerta y abre otra (así se recupera incluso si un proxy la deja colgada).
+- **El token va en la cabecera `Authorization`**, no en la URL: por eso el cliente usa `fetch` en streaming en lugar de `EventSource`, que no permite cabeceras.
+- **Límite actual:** las conexiones se guardan en memoria, así que funciona con **una** instancia de la API. Para varias instancias habría que repartir los eventos con Redis (pub/sub).
+- **App móvil:** sigue consultando los mensajes nuevos cada 15 s para sus notificaciones locales. Las notificaciones con la app cerrada requerirían *push* (Firebase Cloud Messaging).
+
+### Capturas adjuntas
+
+| Paso | Qué se hace |
+|---|---|
+| Subida | `multipart/form-data` en el campo `archivos`; máximo **5 imágenes** de **5 MB** por envío (configurable). Se reciben en memoria: nada se escribe en disco hasta comprobar los permisos. |
+| Validación | El tipo se decide por los **primeros bytes del archivo** (su firma), no por la extensión ni por lo que diga el navegador. Solo PNG, JPEG, GIF y WebP. **SVG no se acepta**, porque puede contener JavaScript. |
+| Almacenamiento | Nombre aleatorio (UUID) en `backend/uploads`, fuera de la web y fuera de git. En la base de datos, la tabla `Adjuntos` guarda el nombre original (saneado), el tipo, el tamaño y a qué ticket, mensaje o reporte pertenece. |
+| Descarga | `GET /api/adjuntos/:id` comprueba que quien pide la imagen tiene acceso a su ticket. Las `<img>` no pueden enviar el token, así que la web descarga cada imagen con `fetch` y la muestra desde memoria; al cerrar sesión, esa memoria se vacía. |
+| Reportes «Otro» | Sus capturas las ve el admin al clasificarlo y, al convertirlo en ticket, pasan al reporte original del ticket nuevo. |
+
+---
+
 ## Seguridad
 
 | Área | Medida |
@@ -480,6 +576,8 @@ flowchart LR
 | **API** | Cabeceras de seguridad (helmet), consultas SQL parametrizadas, lista blanca de campos editables, errores sin detalles internos. |
 | **Base de datos** | Usuario de MySQL propio con permisos solo sobre `ti_tickets`. |
 | **Servicio de IA** | Solo escucha en `127.0.0.1`, exige el token interno en todas las rutas y no publica `/docs` salvo en desarrollo. |
+| **Capturas** | Validadas por su contenido real (no por la extensión), sin SVG, con límite de tamaño y cantidad, guardadas con nombre aleatorio fuera de la web y servidas solo a quien tiene acceso al ticket (con `nosniff` y una política de contenido restrictiva). |
+| **Tiempo real** | La conexión exige sesión y cada evento solo se envía a quien tiene permiso sobre ese ticket. |
 
 > Si un secreto se sube por error, **cámbialo**: borrar el commit no basta, porque puede quedar en el historial o en copias.
 
@@ -497,7 +595,11 @@ Todas las rutas, salvo `login`, `register` y `health`, requieren la cabecera `Au
 | `GET` | `/api/tickets` · `/api/tickets/:id` | Staff: todos · usuario: los suyos |
 | `POST` | `/api/tickets` | Cualquier sesión (agente y prioridad salen del catálogo) |
 | `PATCH` | `/api/tickets/:id` | Admin, agente |
-| `GET` `POST` | `/api/tickets/:id/conversaciones` | Quien tenga acceso al ticket |
+| `GET` | `/api/events` | Cualquier sesión · conexión de avisos en tiempo real (SSE) |
+| `GET` `POST` | `/api/tickets/:id/conversaciones` — JSON `{ mensaje }` o multipart con `mensaje` + `archivos` | Quien tenga acceso al ticket |
+| `GET` `POST` | `/api/tickets/:id/adjuntos` — capturas del ticket / del reporte original | Quien tenga acceso al ticket |
+| `GET` `POST` | `/api/otros-incidentes/:id/adjuntos` | Su autor (subir) · su autor o staff (ver) |
+| `GET` | `/api/adjuntos/:id` — la imagen | Quien tenga acceso a su ticket o reporte |
 | `GET` | `/api/conversaciones/ultimas?tickets=1,2` · `/api/conversaciones/nuevas?after=ID` | Cualquier sesión |
 | `GET` `POST` | `/api/otros-incidentes` | Staff: todos · usuario: los suyos |
 | `POST` | `/api/otros-incidentes/:id/convertir` | Admin, agente |
@@ -529,6 +631,9 @@ erDiagram
     Tickets |o--o| Foro_publicaciones : "origen"
     Foro_publicaciones ||--o{ Foro_votos : "recibe"
     Foro_publicaciones ||--o{ Foro_comentarios : "recibe"
+    Tickets ||--o{ Adjuntos : "capturas"
+    Conversaciones ||--o{ Adjuntos : "capturas"
+    Otros_incidentes ||--o{ Adjuntos : "capturas"
 
     Usuarios {
         int id PK
@@ -597,6 +702,16 @@ erDiagram
         text Mensaje
         bool Anonimo
     }
+    Adjuntos {
+        int id PK
+        int Ticket_ID FK
+        int Conversacion_ID FK "null = reporte original"
+        int Otro_ID FK
+        string Nombre "original, saneado"
+        string Archivo "nombre aleatorio en disco"
+        string Tipo
+        int Tamano
+    }
 ```
 
 > Los nombres de tablas y columnas se conservan de la versión original en Supabase, para facilitar la migración.
@@ -621,7 +736,7 @@ Las contraseñas en texto plano se guardan cifradas con bcrypt. El script se pue
 |---|---|---|
 | `backend/` | `npm run dev` | API en modo desarrollo (se reinicia al guardar) |
 | `backend/` | `npm start` | API en modo normal |
-| `backend/` | `npm run db:init` | Crea o actualiza las tablas, **sin borrar datos** |
+| `backend/` | `npm run db:init` | Crea o actualiza las tablas, **sin borrar datos** (úsalo tras actualizar el proyecto) |
 | `backend/` | `npm run db:seed` | Tablas + datos de demostración (solo si la base está vacía) |
 | `backend/` | `npm run db:migrate-supabase` | Copia los datos desde Supabase |
 | `Web/` | `npm run dev` | Web en desarrollo (http://localhost:5173) |
@@ -687,6 +802,23 @@ El hook detectó una clave o contraseña escrita en el código o un archivo `.en
 </details>
 
 <details>
+<summary><b>Los avisos en tiempo real no llegan</b></summary>
+
+- Abre la **campana**: arriba indica *En tiempo real*, *Reconectando…* o *Sin conexión*.
+- Si la API se reinició, el navegador se reconecta solo (como mucho en ~40 s) y recarga lo que se perdió.
+- Si hay un Nginx u otro proxy delante, desactiva el *buffering* en `/api/events` (ver *Llevarlo a producción*).
+- Las **notificaciones del escritorio** solo aparecen con la pestaña en segundo plano y si las activaste desde la campana; si el navegador las bloqueó, se reactivan en el candado de la barra de direcciones.
+</details>
+
+<details>
+<summary><b>Una captura no se sube</b></summary>
+
+- Solo se aceptan **PNG, JPG, GIF y WebP** de hasta **5 MB**, y como máximo **5 por envío** (`MAX_UPLOAD_MB` en `backend/.env` cambia el tamaño).
+- Un archivo renombrado a `.png` que no es una imagen de verdad se rechaza a propósito.
+- Si actualizaste el proyecto y sale un error de base de datos, ejecuta `npm run db:init` en `backend/` para crear la tabla `Adjuntos`.
+</details>
+
+<details>
 <summary><b>http://localhost/TI-Tickets da error 403</b></summary>
 
 Es lo esperado: `.htaccess` bloquea que Apache sirva la carpeta, para que nadie pueda descargar los `.env`. La web se abre en **http://localhost:5173** (Vite), no desde Apache.
@@ -696,8 +828,9 @@ Es lo esperado: `.htaccess` bloquea que Apache sirva la carpeta, para que nadie 
 
 ## Hoja de ruta
 
-- [ ] Notificaciones en tiempo real (WebSocket/SSE) en lugar de consultar cada pocos segundos
-- [ ] Adjuntar capturas de pantalla a los tickets
+- [x] Notificaciones en tiempo real (SSE) en lugar de consultar cada pocos segundos
+- [x] Adjuntar capturas de pantalla a los tickets
+- [ ] Notificaciones *push* en la app móvil (con la app cerrada) y capturas desde el móvil
 - [ ] Clasificación automática con IA al crear un reporte "Otro"
 - [ ] Métricas de tiempo de resolución y cumplimiento de SLA
 - [ ] Guardar la sesión de la app móvil en almacenamiento cifrado

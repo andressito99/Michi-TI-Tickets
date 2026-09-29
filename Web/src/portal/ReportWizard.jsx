@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Check, ChevronRight, ChevronDown, Clock, Loader2, Send, AlertCircle, Lightbulb, ThumbsUp } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, ChevronDown, Clock, Loader2, Send, AlertCircle, Lightbulb, ThumbsUp, ImagePlus } from "lucide-react";
 import { api } from "../lib/api";
 import { categoryStyle, OTHER_CATEGORY } from "./categoryIcon";
 import { Michi } from "../components/ui/Michi";
+import { AttachButton, DraftThumbs, MAX_FILES, MAX_MB, useImageDraft } from "../components/tickets/Attachments";
 
 const OTHER = "__otro__";
 const STEPS = ["Categoría", "Problema", "Detalles"];
@@ -87,7 +88,8 @@ export function ReportWizard({ onCancel, onCreated, onOpenTicket, onHome }) {
   const [descripcion, setDescripcion] = useState("");
   const [sending, setSending]       = useState(false);
   const [error, setError]           = useState("");
-  const [result, setResult]         = useState(null);   // { kind: "ticket" | "otro", id }
+  const [result, setResult]         = useState(null);   // { kind: "ticket" | "otro", id, avisoAdjuntos? }
+  const draft = useImageDraft();                          // capturas opcionales del problema
 
   // Se carga el catálogo completo una vez: sirve para las categorías, sus ejemplos y el paso 2
   const [catalogo, setCatalogo] = useState([]);
@@ -130,18 +132,32 @@ export function ReportWizard({ onCancel, onCreated, onOpenTicket, onHome }) {
 
     setSending(true); setError("");
     try {
+      let kind, row;
       if (incidente === OTHER) {
         // No encaja en el catálogo: lo revisa el equipo y lo convierte en ticket
-        const row = await api.post("/otros-incidentes", {
+        kind = "otro";
+        row = await api.post("/otros-incidentes", {
           Categoria:   categoria === OTHER ? otraCategoria.trim() : categoria,
           Descripcion: desc,
           Prioridad:   "Pendiente",
         });
-        setResult({ kind: "otro", id: row.id });
       } else {
-        const row = await api.post("/tickets", { Incidente_ID: incidente.id, Descripcion: desc });
-        setResult({ kind: "ticket", id: row.id });
+        kind = "ticket";
+        row = await api.post("/tickets", { Incidente_ID: incidente.id, Descripcion: desc });
       }
+
+      // Las capturas se suben después de crear el reporte; si fallan, el reporte ya existe
+      let avisoAdjuntos = null;
+      if (draft.files.length > 0) {
+        const form = new FormData();
+        draft.files.forEach(file => form.append("archivos", file, file.name));
+        try {
+          await api.upload(kind === "otro" ? `/otros-incidentes/${row.id}/adjuntos` : `/tickets/${row.id}/adjuntos`, form);
+        } catch (err) {
+          avisoAdjuntos = `El reporte se envió, pero las capturas no: ${err.message}`;
+        }
+      }
+      setResult({ kind, id: row.id, avisoAdjuntos });
       onCreated();
     } catch (err) {
       setError(err.message);
@@ -165,6 +181,9 @@ export function ReportWizard({ onCancel, onCreated, onOpenTicket, onHome }) {
           <p className="text-muted mt-2">
             El equipo de soporte revisará tu reporte y lo convertirá en un ticket. Podrás verlo en <b>Mis tickets</b>.
           </p>
+        )}
+        {result.avisoAdjuntos && (
+          <p className="mt-3 text-sm text-warning bg-warning/10 border border-warning/25 rounded-lg px-3 py-2">{result.avisoAdjuntos}</p>
         )}
         <div className="flex flex-col sm:flex-row gap-2 justify-center mt-6">
           {result.kind === "ticket" && (
@@ -294,10 +313,34 @@ export function ReportWizard({ onCancel, onCreated, onOpenTicket, onHome }) {
             <label className="text-sm font-semibold text-ink-2 block mb-1.5">Describe el problema</label>
             <textarea
               value={descripcion} onChange={e => setDescripcion(e.target.value)} rows={6} autoFocus
+              onPaste={draft.onPaste}
               placeholder="¿Qué pasa? ¿Desde cuándo? ¿Aparece algún mensaje de error? ¿Dónde estás (piso, oficina)?"
               className="w-full px-3 py-2.5 rounded-lg border border-line-strong bg-field text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 placeholder:text-faint resize-none leading-relaxed"
             />
             <p className="text-xs text-faint mt-1">Cuantos más detalles, más rápido lo resolvemos.</p>
+          </div>
+
+          {/* Capturas de pantalla (opcional) */}
+          <div
+            {...draft.dropProps}
+            className={`rounded-xl border-2 border-dashed p-4 transition-colors ${
+              draft.dragging ? "border-brand bg-brand-soft" : "border-line-strong"
+            }`}
+          >
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="w-10 h-10 rounded-xl bg-brand-soft text-brand flex items-center justify-center flex-shrink-0">
+                <ImagePlus size={20} />
+              </span>
+              <div className="flex-1 min-w-[180px]">
+                <p className="text-sm font-semibold text-ink">Adjunta capturas de pantalla <span className="font-normal text-faint">(opcional)</span></p>
+                <p className="text-xs text-muted">
+                  Arrástralas aquí, pégalas con <kbd className="px-1 rounded border border-line bg-subtle text-[11px]">Ctrl</kbd> + <kbd className="px-1 rounded border border-line bg-subtle text-[11px]">V</kbd> o
+                  elige archivos. Hasta {MAX_FILES} imágenes de {MAX_MB} MB.
+                </p>
+              </div>
+              <AttachButton draft={draft} disabled={sending} />
+            </div>
+            <div className="-mx-3 mt-2"><DraftThumbs draft={draft} /></div>
           </div>
 
           <div className="flex justify-end gap-2">

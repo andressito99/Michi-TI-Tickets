@@ -8,6 +8,8 @@ import { ReportWizard } from "./ReportWizard";
 import { TicketThread } from "./TicketThread";
 import { ForoBrowser } from "../foro/ForoBrowser";
 import { MichiWatermark } from "../components/ui/MichiBuddy";
+import { NotificationBell } from "../notifications/NotificationBell";
+import { useNotificationHandler } from "../notifications/NotificationsProvider";
 
 /**
  * Portal sencillo para usuarios normales (rol "usuario"):
@@ -21,6 +23,9 @@ export function UserPortal({ user, onLogout, dark, onToggleDark }) {
   const goReport = () => setView({ name: "report" });
   const openTicket = id => setView({ name: "ticket", id });
   const goForo   = () => setView({ name: "foro" });
+
+  // Al pulsar una notificación se abre el ticket correspondiente
+  useNotificationHandler(note => { if (note.ticketId) openTicket(note.ticketId); else goHome(); });
 
   const ticket = view.name === "ticket" ? data.tickets.find(t => t._id === view.id) : null;
 
@@ -96,6 +101,7 @@ function PortalHeader({ user, onLogout, dark, onToggleDark, onHome, onReport, on
               <Plus size={16} strokeWidth={2.5} /> <span className="hidden sm:inline">Reportar problema</span>
             </button>
           )}
+          <NotificationBell />
           <button
             onClick={onToggleDark} title={dark ? "Modo claro" : "Modo oscuro"}
             className="w-9 h-9 rounded-lg flex items-center justify-center text-white/80 hover:bg-navy-2 hover:text-white transition-colors"

@@ -10,6 +10,7 @@ import { ConfigView } from "../views/ConfigView";
 import { ForoAdminView } from "../views/ForoAdminView";
 import { useTickets } from "../hooks/useTickets";
 import { useAgents } from "../hooks/useAgents";
+import { useNotificationHandler } from "../notifications/NotificationsProvider";
 
 const ADMIN_NAV_ITEMS = [
   { key: "tickets",   label: "Tickets",       Icon: Inbox, hasBadge: true },
@@ -37,6 +38,13 @@ export function AdminPanel({ user, onLogout, dark, onToggleDark }) {
     setSelectedId(id);
     setActiveView("tickets");
   };
+
+  // Al pulsar una notificación: ticket → workspace; reporte "Otro" → Reportes; propuesta → Foro
+  useNotificationHandler(note => {
+    if (note.ticketId) openTicket(`TK-${String(note.ticketId).padStart(4, "0")}`);
+    else if (note.kind === "otro") setActiveView("reports");
+    else if (note.kind === "foro") setActiveView("foro");
+  });
 
   const selectedTicket = tickets.find(t => t.id === selectedId) ?? null;
 

@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { ForoEditor } from "../foro/ForoEditor";
 import { ForoBrowser, fechaCorta } from "../foro/ForoBrowser";
 import { Michi } from "../components/ui/Michi";
+import { useRealtimeRefresh } from "../lib/realtime";
 
 const TABS = [
   { key: "propuesta", label: "Por revisar" },
@@ -36,6 +37,8 @@ export function ForoAdminView() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  // Tiempo real: propuestas nuevas de los usuarios
+  useRealtimeRefresh(e => e.type === "foro.proposed", load);
 
   const cambiarEstado = async (p, Estado) => {
     try {

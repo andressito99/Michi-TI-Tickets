@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { setToken, setUnauthorizedHandler } from "./lib/api";
+import { startRealtime, stopRealtime } from "./lib/realtime";
+import { clearImageCache } from "./components/tickets/Attachments";
+import { NotificationsProvider } from "./notifications/NotificationsProvider";
 import { LoginScreen } from "./components/auth/LoginScreen";
 import { AdminPanel } from "./panels/AdminPanel";
 import { AgentPanel } from "./panels/AgentPanel";
@@ -11,6 +14,8 @@ export default function App() {
   const [dark, setDark] = useDarkMode();
 
   const logout = () => {
+    stopRealtime();
+    clearImageCache();   // que la siguiente persona no vea imágenes de esta sesión
     setToken(null);
     setCurrentUser(null);
   };
@@ -21,39 +26,30 @@ export default function App() {
     return () => setUnauthorizedHandler(null);
   }, []);
 
+  // Conexión de notificaciones en tiempo real mientras haya sesión
+  useEffect(() => {
+    if (!currentUser) return;
+    startRealtime();
+    return () => stopRealtime();
+  }, [currentUser]);
+
   if (!currentUser) {
     return <LoginScreen onLogin={setCurrentUser} />;
   }
 
-  // Usuarios normales: portal sencillo para reportar y seguir sus tickets
-  if (currentUser.role !== "admin" && currentUser.role !== "agente") {
-    return (
-      <UserPortal
-        user={currentUser}
-        onLogout={logout}
-        dark={dark}
-        onToggleDark={() => setDark(d => !d)}
-      />
-    );
-  }
-
-  if (currentUser.role === "admin") {
-    return (
-      <AdminPanel
-        user={currentUser}
-        onLogout={logout}
-        dark={dark}
-        onToggleDark={() => setDark(d => !d)}
-      />
-    );
-  }
+  const props = { user: currentUser, onLogout: logout, dark, onToggleDark: () => setDark(d => !d) };
+  const isStaff = currentUser.role === "admin" || currentUser.role === "agente";
 
   return (
-    <AgentPanel
-      user={currentUser}
-      onLogout={logout}
-      dark={dark}
-      onToggleDark={() => setDark(d => !d)}
-    />
+    <NotificationsProvider user={currentUser}>
+      {!isStaff ? (
+        // Usuarios normales: portal sencillo para reportar y seguir sus tickets
+        <UserPortal {...props} />
+      ) : currentUser.role === "admin" ? (
+        <AdminPanel {...props} />
+      ) : (
+        <AgentPanel {...props} />
+      )}
+    </NotificationsProvider>
   );
 }
